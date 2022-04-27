@@ -1,12 +1,23 @@
 #!/usr/bin/env python
-
+import socket
 from getpass import getpass
 import json
 import os
 import copy
+import logging
+import sys
 import time
 import argparse
 import requests
+
+
+hostname = socket.gethostname()
+logger = logging.getLogger("tcportal-example")
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stderr,
+    format="%(asctime)s %(name)s %(levelname)s %(message)s ",
+)
 
 FROM_TIME = None
 TO_TIME = None
@@ -135,6 +146,56 @@ def get_events(api_key, from_time, to_time, client_ids, flatten):
         have_more_pages = result_json["data"]["events"]["pageInfo"]["hasNextPage"]
 
 
+def format_event_json(event):
+    """Format an event as JSON"""
+    return json.dumps(event)
+
+
+def format_event_leef(event):
+    """Format an event as QRadar / LEEF"""
+
+    syslog_header = f'<13>1 {event["actionTime"]} {hostname}'
+    leef_header = f'LEEF:2.0|TrinityCyber|PTI|1|{event["id"]}|xa6|'
+    fields = dict()
+
+    fields["devTime"] = event["actionTime"]
+    fields[
+        "devTimeFormat"
+    ] = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"  # (e.g. 2022-04-25T00:01:19.109+00:00)
+
+    # LEEF-standard fields
+    if "source" in event:
+        fields["src"] = event["source"]
+    if "destination" in event:
+        fields["dst"] = event["destination"]
+    if "sourcePort" in event:
+        fields["srcPort"] = event["sourcePort"]
+    if "destinationPort" in event:
+        fields["dstPort"] = event["destinationPort"]
+    if "transportProtocol" in event:
+        fields["proto"] = event["transportProtocol"]
+
+    # Formula-related metadata
+    fields["tcFormulaId"] = event["formula"]["formulaId"]
+    fields["tcFormulaTitle"] = event["formula"]["title"]
+    for key, value in event["formula"]["tags"].items():
+        key = "tcFormula" + key.title().replace(" ", "")
+        fields[key] = value
+
+    # Application / protocol related data
+    for app_fields in event["applicationData"]:
+        for key, value in app_fields.items():
+            if value is None:
+                continue
+            if isinstance(value, str):
+                # Escape delimiter
+                value = value.replace("\xa6", "\\\xa6")
+            fields[key] = value
+
+    fields_formatted = "\xa6".join([f"{key}={value}" for key, value in fields.items()])
+    return f"{syslog_header} {leef_header}{fields_formatted}"
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -175,17 +236,35 @@ if __name__ == "__main__":
         action="store_true",
         required=False,
     )
+    parser.add_argument(
+        "--format",
+        help="Output format used to print events",
+        default="json",
+        choices=["json", "leef"],
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Run once and exit after printing event",
+    )
+
     args = parser.parse_args()
 
     from_time = args.begin
     to_time = args.end
     customer_ids = args.customer_ids
     api_key = get_api_key(args)
+    format_func = format_event_json
+    if args.format == "leef":
+        args.flatten = True
+        format_func = format_event_leef
 
     tc3path = os.path.expanduser(MARKER_FILE_DIR)
-    print(f"Checking if directory {tc3path} exists to hold the after maker file.")
+    logger.info(
+        f"Checking if directory %s exists to hold the after maker file.", tc3path
+    )
     if not os.path.exists(tc3path):
-        print(f"Creating directory {tc3path} to hold the after marker file.")
+        logger.info("Creating directory %s to hold the after marker file.", tc3path)
         os.mkdir(tc3path)
     while True:
         got_events = False
@@ -193,7 +272,9 @@ if __name__ == "__main__":
             api_key, from_time, to_time, customer_ids, args.flatten
         ):
             got_events = True
-            print(json.dumps(event))
-        if not got_events:
-            print(f"Received 0 events, waiting and checking again.")
+            print(format_func(event))
+        if got_events is False:
+            if args.once:
+                break
+            logger.info(f"Received 0 events, waiting and checking again.")
             time.sleep(30)
