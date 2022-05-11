@@ -43,6 +43,8 @@ query RecentEvents($after: String, $fromTime: DateTime, $toTime: DateTime) {
         sourcePort
         destinationPort
         transportProtocol
+        direction
+        trustInitiated
         formulaMatches {
             action {
                 response
@@ -155,35 +157,36 @@ def format_event_leef(event):
     """Format an event as QRadar / LEEF"""
 
     syslog_header = f'<13>1 {event["actionTime"]} {hostname}'
-    leef_header = f'LEEF:2.0|TrinityCyber|PTI|1|{event["id"]}|xa6|'
+    leef_header = f'LEEF:2.0|TrinityCyber|PTI|1|{event.pop("id")}|xa6|'
     fields = dict()
 
-    fields["devTime"] = event["actionTime"]
+    fields["devTime"] = event.pop("actionTime")
     fields[
         "devTimeFormat"
     ] = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"  # (e.g. 2022-04-25T00:01:19.109+00:00)
 
     # LEEF-standard fields
     if "source" in event:
-        fields["src"] = event["source"]
+        fields["src"] = event.pop("source")
     if "destination" in event:
-        fields["dst"] = event["destination"]
+        fields["dst"] = event.pop("destination")
     if "sourcePort" in event:
-        fields["srcPort"] = event["sourcePort"]
+        fields["srcPort"] = event.pop("sourcePort")
     if "destinationPort" in event:
-        fields["dstPort"] = event["destinationPort"]
+        fields["dstPort"] = event.pop("destinationPort")
     if "transportProtocol" in event:
-        fields["proto"] = event["transportProtocol"]
+        fields["proto"] = event.pop("transportProtocol")
 
     # Formula-related metadata
-    fields["tcFormulaId"] = event["formula"]["formulaId"]
-    fields["tcFormulaTitle"] = event["formula"]["title"]
-    for key, value in event["formula"]["tags"].items():
+    formula_metadata = event.pop("formula")
+    fields["tcFormulaId"] = formula_metadata["formulaId"]
+    fields["tcFormulaTitle"] = formula_metadata["title"]
+    for key, value in formula_metadata["tags"].items():
         key = "tcFormula" + key.title().replace(" ", "")
         fields[key] = value
 
     # Application / protocol related data
-    for app_fields in event["applicationData"]:
+    for app_fields in event.pop("applicationData"):
         for key, value in app_fields.items():
             if value is None:
                 continue
@@ -191,6 +194,9 @@ def format_event_leef(event):
                 # Escape delimiter
                 value = value.replace("\xa6", "\\\xa6")
             fields[key] = value
+
+    # Add any extra information from the query
+    fields.update(event)
 
     fields_formatted = "\xa6".join([f"{key}={value}" for key, value in fields.items()])
     return f"{syslog_header} {leef_header}{fields_formatted}"
