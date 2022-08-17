@@ -1,0 +1,27 @@
+{
+  "trinity_cyber_portal": {
+    "api_url": "https://portal.trinitycyber.com/graphql",
+    "api_key": "<add me>",
+    "marker_file": "~/.tc3/portal-s3-after-marker.txt",
+    "customer_gids": [],
+    "poll_interval_seconds": 300,
+    "outputs": ["stream"],
+    "query_name": "TcExampleLatestEvents"
+  },
+  "stream_output": {
+    "flatten": true,
+    "format": "json"
+  },
+  "directory_output": {
+    "flatten": false,
+    "directory": "/tmp/events",
+    "key_base": ""
+  },
+  "s3_output": {
+    "flatten": false,
+    "s3_bucket": "event-test.trinitycyber.com",
+    "s3_region": "us-east-1",
+    "key_base": "",
+    "retry_delay_ms": 500
+  }
+}
