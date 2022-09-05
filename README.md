@@ -29,32 +29,37 @@ The "trinity_cyber_portal" section of the configuration file contains applicatio
 | marker_file           | The file used to keep track of current synchronization state.                                                                      |
 | customer_gids         | (For MSP users) Specifies which customers' events to download.  The values can be found by running "tc_portal_sync.py --customers" |
 | poll_interval_seconds | How long to wait (in seconds) between API calls when no additional events are available.                                           |
-| outputs               | Specifies which outputs receive the events (values are "stream", "directory", and "s3".                                            |
 | query_name            | Update with a descriptive query name that can be used for support purposes.  Example: MyCompanyMyApplication                       |
 
-The "stream_output" section controls how data is written to standard out if "stream" is configured as an
-output in the previous section:
+The "outputs" section consists of a list of event output destinations.  Each entry in the
+list is a JSON object with the following fields:
+
+| Field         | Description                                          |
+|---------------|------------------------------------------------------|
+| type          | Type of output (e.g. directory, S3)                  |
+| enabled       | Specifies if the output is enabled or not            |
+| flatten       | Flattens events to remove nested JSON structures     |
+| field_mapping | A override mapping of field names to new field names |
+
+These additional fields apply to the "stream" output type:
 
 | Field   | Description                                                                |
 |---------|----------------------------------------------------------------------------|
-| flatten | If true, events will be flattened to contain one formula match per event.  |
 | format  | "json" for JSON output, or "leef" for QRadar LEEF format                   |
 
-The "directory_output" section controls how data is written to a directory if "directory"
-is configured as an output in the previous section:
+
+These additional fields apply to the "directory" output type:
 
 | Field     | Description                                                              |
 |-----------|--------------------------------------------------------------------------|
-| flatten   | If true, events will be flattened to contain one formula match per event. |
 | directory | The directory where event files will be written.                         |
 | key_base  | Specifies a prefix to be added to files                                  |
 
-The "s3_output" section controls how data is written to a directory if "s3"
-is configured as an output in the previous section:
+
+These additional fields apply to the "s3" output type:
 
 | Field          | Description                                                               |
 |----------------|---------------------------------------------------------------------------|
-| flatten        | If true, events will be flattened to contain one formula match per event. |
 | s3_bucket      | The name of the S3 bucket to write to.                                    |
 | s3_region      | The region of the S3 bucket to write to                                   |
 | key_base       | Specifies a prefix to be added to files                                   |

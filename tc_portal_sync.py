@@ -65,6 +65,7 @@ graphql_query = """
             }
             applicationProtocol
             applicationData {
+              __typename
               ... on HttpRequestData {
                 method
                 path
@@ -94,6 +95,7 @@ graphql_query = """
 class StreamOutput:
     def __init__(self, output_config):
         self.flatten = output_config["flatten"]
+        self.mapping = output_config.get("field_mapping", {})
         format = output_config.get("format", "json")
         if format == "json":
             self.formatter = self.format_json
@@ -113,9 +115,9 @@ class StreamOutput:
     def output_no_results(self):
         pass
 
-    @staticmethod
-    def format_json(event):
-        return json.dumps(event).encode("UTF-8")
+    def format_json(self, event):
+        mapped_event = apply_mapping(self.mapping, event)
+        return json.dumps(mapped_event).encode("UTF-8")
 
     @staticmethod
     def format_leef(event):
@@ -174,6 +176,7 @@ class BaseBucketEventOutput:
         self.flatten = output_config["flatten"]
         self.key_base = output_config["key_base"]
         self.flatten = output_config["flatten"]
+        self.mapping = output_config.get("field_mapping", {})
         assert (
             output_config.get("format", "json") == "json"
         ), "This output only accepts JSON format"
@@ -194,7 +197,8 @@ class BaseBucketEventOutput:
         if self.flatten:
             for index, flattened_event in enumerate(flatten_event(event)):
                 key = self.generate_key(flattened_event, index)
-                content = json.dumps(flattened_event).encode("UTF-8")
+                mapped_event = apply_mapping(self.mapping, flattened_event)
+                content = json.dumps(mapped_event).encode("UTF-8")
                 self.write_content_to_bucket(key, content)
         else:
             key = self.generate_key(event)
@@ -269,23 +273,37 @@ def flatten_event(event):
     Cyber events.   The process takes an event that may contain more than one formula match and converts it into
     several events each containing a single formula match.   It also simplifies the tag structure of the events.
     """
-    formula_matches = event.pop("formulaMatches")
-    if formula_matches is None:
-        yield event
-        return
+    formula_matches = event.pop("formulaMatches", [])
     for match in formula_matches:
         event_copy = copy.deepcopy(event)
-        event_copy["formula"] = copy.deepcopy(match["formula"])
-        tags = event_copy["formula"].pop("tags")
-        event_copy["formula"]["tags"] = {}
-        for tag in tags:
+        del event_copy["applicationData"]
+        for key, value in match["formula"].items():
+            event_copy[key] = value
+        event_copy["response"] = match["action"]["response"]
+        event_copy["tags"] = {}
+        for tag in match["formula"]["tags"]:
             category = tag["category"]
             value = tag["value"]
-            if category in event_copy["formula"]["tags"]:
-                event_copy["formula"]["tags"][category] += f"; {value}"
+            if category in match["formula"]["tags"]:
+                event_copy["tags"][category] += f"; {value}"
             else:
-                event_copy["formula"]["tags"][category] = value
+                event_copy["tags"][category] = value
+        for app_data in event["applicationData"]:
+            typename = app_data.pop("__typename")
+            for key, value in app_data.items():
+                event_copy[f"{typename}.{key}"] = value
         yield event_copy
+
+
+def apply_mapping(mapping, event):
+    result = dict()
+    for key, value in event.items():
+        if key in mapping:
+            result[mapping[key]] = value
+        else:
+            stripped_key = key.split(".")[-1]
+            result[stripped_key] = value
+    return result
 
 
 class TcPortalClient:
@@ -415,13 +433,15 @@ if __name__ == "__main__":
 
     # Configure one or more outputs for events
     outputs = []
-    for output_type in config["trinity_cyber_portal"]["outputs"]:
-        if output_type == "stream":
-            outputs.append(StreamOutput(config["stream_output"]))
-        elif output_type == "directory":
-            outputs.append(DirectoryOutput(config["directory_output"]))
-        elif output_type == "s3":
-            outputs.append(S3BucketOutput(config["s3_output"]))
+    for output in config["outputs"]:
+        if output["enabled"] is False:
+            continue
+        if output["type"] == "stream":
+            outputs.append(StreamOutput(output))
+        elif output["type"] == "directory":
+            outputs.append(DirectoryOutput(output))
+        elif output["type"] == "s3":
+            outputs.append(S3BucketOutput(output))
 
     while True:
         got_events = False

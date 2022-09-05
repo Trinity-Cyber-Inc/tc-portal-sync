@@ -5,23 +5,43 @@
     "marker_file": "~/.tc3/portal-s3-after-marker.txt",
     "customer_gids": [],
     "poll_interval_seconds": 300,
-    "outputs": ["stream"],
     "query_name": "TcExampleLatestEvents"
   },
-  "stream_output": {
-    "flatten": true,
-    "format": "json"
-  },
-  "directory_output": {
-    "flatten": false,
-    "directory": "/tmp/events",
-    "key_base": ""
-  },
-  "s3_output": {
-    "flatten": false,
-    "s3_bucket": "event-test.trinitycyber.com",
-    "s3_region": "us-east-1",
-    "key_base": "",
-    "retry_delay_ms": 500
-  }
+  "outputs": [
+    {
+      "enabled": true,
+      "type": "stream",
+      "flatten": true,
+      "format": "json",
+      "field_mapping": {
+        "actionTime": "timestamp",
+        "source": "src",
+        "destination": "dest",
+        "sourcePort": "src_port",
+        "destinationPort": "dest_port",
+        "HttpRequestData.method": "http_method",
+        "HttpRequestData.path": "uri_query",
+        "HttpRequestData.host": "url_domain",
+        "HttpRequestData.userAgent": "http_user_agent",
+        "HttpResponseData.statusCode": "status",
+        "HttpResponseData.contentType": "http_content_type"
+      }
+    } ,
+    {
+      "enabled": true,
+      "type": "directory",
+      "flatten": false,
+      "directory": "/tmp/events",
+      "key_base": ""
+    },
+    {
+      "enabled": false,
+      "type": "s3",
+      "flatten": false,
+      "s3_bucket": "event-test.trinitycyber.com",
+      "s3_region": "us-east-1",
+      "key_base": "",
+      "retry_delay_ms": 500
+    }
+  ]
 }
