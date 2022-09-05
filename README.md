@@ -16,6 +16,19 @@ This is a Python 3 script; it was developed on CentOS 7 with Python 3.6 but shou
 3  variants on most UNIX based operating systems.  Library dependencies are listed in requirements.txt and can be
 installed using "pip install -r requirements.txt"
 
+### Running as a Service
+If installing as a service using the RPM, the script and config files will be placed in the 
+/opt/trinity/tc-portal-sync/ directory.  Make sure any configuration files needed by the service
+are accessible to the "trinitycyber" user.
+
+To start the service, as root:
+  * Edit the "/opt/trinity/tc-portal-sync/config.json" configuration file (see below for details)
+  * Run "systemctl start tc-portal-sync"
+
+It is possible to run multiple instance of the service, each with its own configuration.  To do so:
+  * Create a "/opt/trinity/tc-portal-sync/config-<instance_name>.json" file
+  * Run "systemctl start tc-portal-sync@<instance_name>"
+
 ### Configuration
 The configuration file for this application is "config.json" and it exists in the top-level project directory, or in
 /opt/trinity/tc-portal-sync if installing via the RPM.

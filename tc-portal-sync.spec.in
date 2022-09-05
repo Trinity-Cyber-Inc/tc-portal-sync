@@ -31,7 +31,7 @@ Trinity Cyber, Inc. Portal Sync
 %{__cp} config.json.sample %{buildroot}/opt/trinity/tc-portal-sync/config.json
 %{__cp} environment.sample %{buildroot}/opt/trinity/tc-portal-sync/environment
 %{__mkdir} -p %{buildroot}/usr/lib/systemd/system
-%{__cp} tc-portal-sync.service %{buildroot}/usr/lib/systemd/system
+%{__cp} tc-portal-sync@.service %{buildroot}/usr/lib/systemd/system
 
 # Install dependencies into a Python virtualenv and clean up paths
 # See https://www.alexhudson.com/2013/05/24/packagin-a-virtualenv-really-not-relocatable/
@@ -95,5 +95,5 @@ fi
 /opt/trinity/tc-portal-sync/
 %config(noreplace) /opt/trinity/tc-portal-sync/config.json
 %config(noreplace) /opt/trinity/tc-portal-sync/environment
-%attr(644, trinitycyber, trinitycyber) /usr/lib/systemd/system/tc-portal-sync.service
+%attr(644, trinitycyber, trinitycyber) /usr/lib/systemd/system/tc-portal-sync@.service
 
