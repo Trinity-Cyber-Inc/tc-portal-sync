@@ -19,7 +19,7 @@ installed using "pip install -r requirements.txt"
 ### Running as a Service
 If installing as a service using the RPM, the script and config files will be placed in the 
 /opt/trinity/tc-portal-sync/ directory.  Make sure any configuration files needed by the service
-are accessible to the "trinitycyber" user.
+are accessible to the "tc-portal-sync" user.
 
 To start the service, as root:
   * Edit the "/opt/trinity/tc-portal-sync/config-default.json" configuration file (see below for detail )
