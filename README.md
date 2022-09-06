@@ -22,7 +22,7 @@ If installing as a service using the RPM, the script and config files will be pl
 are accessible to the "trinitycyber" user.
 
 To start the service, as root:
-  * Edit the "/opt/trinity/tc-portal-sync/config.json" configuration file (see below for details)
+  * Edit the "/opt/trinity/tc-portal-sync/config-default.json" configuration file (see below for detail )
   * Run "systemctl start tc-portal-sync"
 
 It is possible to run multiple instance of the service, each with its own configuration.  To do so:
@@ -30,8 +30,8 @@ It is possible to run multiple instance of the service, each with its own config
   * Run "systemctl start tc-portal-sync@<instance_name>"
 
 ### Configuration
-The configuration file for this application is "config.json" and it exists in the top-level project directory, or in
-/opt/trinity/tc-portal-sync if installing via the RPM.
+The configuration file for this application is "config-default.json" and it exists in the top-level project directory,
+or in /opt/trinity/tc-portal-sync if installing via the RPM.
 
 The "trinity_cyber_portal" section of the configuration file contains application-level settings:
 
@@ -47,12 +47,13 @@ The "trinity_cyber_portal" section of the configuration file contains applicatio
 The "outputs" section consists of a list of event output destinations.  Each entry in the
 list is a JSON object with the following fields:
 
-| Field         | Description                                          |
-|---------------|------------------------------------------------------|
-| type          | Type of output (e.g. directory, S3)                  |
-| enabled       | Specifies if the output is enabled or not            |
-| flatten       | Flattens events to remove nested JSON structures     |
-| field_mapping | A override mapping of field names to new field names |
+| Field         | Description                                            |
+|---------------|--------------------------------------------------------|
+| type          | Type of output (stream, directory, S3)                 |
+| enabled       | Specifies if the output is enabled or not              |
+| flatten       | Flattens events to remove nested JSON structures       |
+| field_mapping | A override mapping of field names to new field names\*  |
+\*Note - the field_mapping option only applies when flattened is true. Re-mapping structured data is not supported.
 
 These additional fields apply to the "stream" output type:
 
@@ -61,7 +62,7 @@ These additional fields apply to the "stream" output type:
 | format  | "json" for JSON output, or "leef" for QRadar LEEF format                   |
 
 
-These additional fields apply to the "directory" output type:
+These additional fields apply to the "directory" output type; directory output is always JSON:
 
 | Field     | Description                                                              |
 |-----------|--------------------------------------------------------------------------|
@@ -69,7 +70,7 @@ These additional fields apply to the "directory" output type:
 | key_base  | Specifies a prefix to be added to files                                  |
 
 
-These additional fields apply to the "s3" output type:
+These additional fields apply to the "s3" output type; S3 output is always JSON:
 
 | Field          | Description                                                               |
 |----------------|---------------------------------------------------------------------------|
@@ -101,5 +102,3 @@ modifications you will need to erase the `~/.tc3/tc-portal-end-cursor` file and 
 
 ### Time ranges and cursors
 If you request all events between *begin* and *end* and consume all of the events, no new events will show up on future queries unless *end* is in the future relative to when the query was last run. Re-running with *begin* set to an earlier date will NOT pull in the "differential update" for "before the last begin date". While that kind of reverse time query IS possible by switching up the script to use "before" instead of "after" and reverse iterating, this script was meant to be a simple example of typical "query all history and keep filling into the future" usage.
-
-~/.aws/credentials 

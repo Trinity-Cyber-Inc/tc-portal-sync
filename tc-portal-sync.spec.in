@@ -28,7 +28,7 @@ Trinity Cyber, Inc. Portal Sync
 %install
 %{__mkdir} -p %{buildroot}/opt/trinity/tc-portal-sync
 %{__cp} LICENSE tc_portal_sync.py %{buildroot}/opt/trinity/tc-portal-sync/
-%{__cp} config.json.sample %{buildroot}/opt/trinity/tc-portal-sync/config.json
+%{__cp} config.json.sample %{buildroot}/opt/trinity/tc-portal-sync/config-default.json
 %{__cp} environment.sample %{buildroot}/opt/trinity/tc-portal-sync/environment
 %{__mkdir} -p %{buildroot}/usr/lib/systemd/system
 %{__cp} tc-portal-sync@.service %{buildroot}/usr/lib/systemd/system
@@ -50,8 +50,10 @@ perl -p -i -e 's/\/.*?\/runtime/runtime/' runtime/bin/*
 
 if  [ $1 -eq 1 ]; then
     # is initial install
-    /usr/bin/systemctl enable tc-portal-sync
-    echo "Service for tc-portal-sync has been enabled, ensure config file is present and correct."
+    /usr/bin/systemctl enable tc-portal-sync@default.service
+    echo "Service for tc-portal-sync default instance has been enabled but not started."
+    echo "Ensure the default config file is present and correct. Then start the service."
+    echo "See the README.md for details on running multiple instances each with a different config."
 fi
 
 %postun
@@ -59,8 +61,7 @@ if [ $1 -eq 0 ]; then
     # is un-install
     /usr/bin/systemctl daemon-reload
 
-    /sbin/userdel trinitycyber
-    /sbin/groupdel trinitycyber
+    /sbin/userdel tc-portal-sync
 
     %{__rm} -rf /opt/trinity/tc-portal-sync
 fi
@@ -72,8 +73,8 @@ fi
 %pre
 if [ $1 -eq 1 ]; then
     # is initial install
-    /usr/bin/getent group trinitycyber || /sbin/groupadd -r trinitycyber
-    /usr/bin/getent passwd trinitycyber || /sbin/useradd -r -d /opt/trinity/tc-portal-sync -s /bin/false -g trinitycyber trinitycyber
+    /usr/bin/getent group tc-portal-sync || /sbin/groupadd -r tc-portal-sync
+    /usr/bin/getent passwd tc-portal-sync || /sbin/useradd -r -d /opt/trinity/tc-portal-sync -s /bin/false -g tc-portal-sync tc-portal-sync
 fi
 
 #if [ $1 -eq 2 ]; then
@@ -83,7 +84,7 @@ fi
 %preun
 if [ $1 -eq 0 ]; then
     # is un-install
-    /usr/bin/systemctl stop tc-portal-sync
+    /usr/bin/systemctl stop tc-portal-sync@default.service
 fi
 
 #if [ $1 -eq 1 ]; then
@@ -91,9 +92,9 @@ fi
 #fi
 
 %files
-%defattr(-, trinitycyber, trinitycyber, -)
+%defattr(-, tc-portal-sync, tc-portal-sync, -)
 /opt/trinity/tc-portal-sync/
-%config(noreplace) /opt/trinity/tc-portal-sync/config.json
+%config(noreplace) /opt/trinity/tc-portal-sync/config-default.json
 %config(noreplace) /opt/trinity/tc-portal-sync/environment
-%attr(644, trinitycyber, trinitycyber) /usr/lib/systemd/system/tc-portal-sync@.service
+%attr(644, tc-portal-sync, tc-portal-sync) /usr/lib/systemd/system/tc-portal-sync@.service
 
