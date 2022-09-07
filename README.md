@@ -47,30 +47,36 @@ The "trinity_cyber_portal" section of the configuration file contains applicatio
 The "outputs" section consists of a list of event output destinations.  Each entry in the
 list is a JSON object with the following fields:
 
-| Field         | Description                                            |
-|---------------|--------------------------------------------------------|
-| type          | Type of output (stream, directory, S3)                 |
-| enabled       | Specifies if the output is enabled or not              |
-| flatten       | Flattens events to remove nested JSON structures       |
-| field_mapping | A override mapping of field names to new field names\*  |
-\*Note - the field_mapping option only applies when flattened is true. Re-mapping structured data is not supported.
+| Field         | Description                                               |
+|---------------|-----------------------------------------------------------|
+| type          | Output type (see below)                                   |
+| enabled       | Specifies if the output is enabled or not                 |
+| field_mapping | An override mapping of field names to new field names\*   |
+| flatten       | Flattens events to remove nested JSON structures          |
+| format        | "json" for JSON output, or "leef" for QRadar LEEF format  |
 
-These additional fields apply to the "stream" output type:
+*Note - the field_mapping option only applies when flattened is true. Re-mapping structured
+data is not currently supported.
 
-| Field   | Description                                                                |
-|---------|----------------------------------------------------------------------------|
-| format  | "json" for JSON output, or "leef" for QRadar LEEF format                   |
+#### Output Type: stdout
+This "stdout" output type writes events to standard output and is helpful if running the script
+directly. There are no additional parameters that apply to this output type.
 
-
-These additional fields apply to the "directory" output type; directory output is always JSON:
+#### Output Type: directory
+The "directory" output type writes a file per-event to a local directory.  These additional
+fields apply:
 
 | Field     | Description                                                              |
 |-----------|--------------------------------------------------------------------------|
 | directory | The directory where event files will be written.                         |
 | key_base  | Specifies a prefix to be added to files                                  |
 
+#### Output Type: s3
+The "s3" output type write a file per-event to an S3 bucket.  This will use the credentials
+found in the ~/.aws/credentials file.  You can use the AWS command-line tool to initialize
+this file.
 
-These additional fields apply to the "s3" output type; S3 output is always JSON:
+These additional fields apply:
 
 | Field          | Description                                                               |
 |----------------|---------------------------------------------------------------------------|
