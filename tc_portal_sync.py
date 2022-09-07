@@ -326,6 +326,7 @@ class TcPortalClient:
             if since:
                 variables["first"] = 1000
                 variables["filter"]["fromTime"] = since
+                since = False
             elif last:
                 variables["last"] = last
             else:

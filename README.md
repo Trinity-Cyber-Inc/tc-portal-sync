@@ -105,6 +105,3 @@ to feed into a SIEM" use case. By default, the script sleeps for 300 seconds and
 
 If you change query parameters between runs, update the fields being requested, or make other
 modifications you will need to erase the `~/.tc3/tc-portal-end-cursor` file and start from scratch.
-
-### Time ranges and cursors
-If you request all events between *begin* and *end* and consume all of the events, no new events will show up on future queries unless *end* is in the future relative to when the query was last run. Re-running with *begin* set to an earlier date will NOT pull in the "differential update" for "before the last begin date". While that kind of reverse time query IS possible by switching up the script to use "before" instead of "after" and reverse iterating, this script was meant to be a simple example of typical "query all history and keep filling into the future" usage.
