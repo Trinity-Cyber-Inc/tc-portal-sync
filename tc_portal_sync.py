@@ -97,6 +97,7 @@ class BaseEventOutput:
     def __init__(self, output_config):
         self.flatten = output_config["flatten"]
         self.mapping = output_config.get("field_mapping", {})
+        self.heartbeat_enabled = output_config.get("heartbeat", False)
 
         self.key_base = output_config.get('key_base') or ""
         if self.key_base:
@@ -218,6 +219,8 @@ class BaseEventOutput:
         return f'{self.key_base}{event_time.strftime("%Y/%m/%d")}/{event_id_hash}_{index}.{self.format}'
 
     def output_no_results(self):
+        if not self.heartbeat_enabled:
+            return
         if self.format != 'json':
             # TODO: Output for LEEF
             return

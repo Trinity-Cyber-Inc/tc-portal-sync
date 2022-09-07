@@ -13,6 +13,7 @@
       "type": "stdout",
       "format": "json",
       "flatten": true,
+      "heartbeat": false,
       "field_mapping": {
         "actionTime": "timestamp",
         "source": "src",
@@ -38,8 +39,9 @@
       "format": "json",
       "flatten": false,
       "field_mapping": {},
+      "heartbeat": true,
       "directory": "/tmp/events",
-      "key_base": "",
+      "key_base": ""
     },
     {
       "enabled": false,
@@ -47,6 +49,7 @@
       "format": "json",
       "flatten": false,
       "field_mapping": {},
+      "heartbeat": true,
       "s3_bucket": "event-test.trinitycyber.com",
       "s3_region": "us-east-1",
       "key_base": "",

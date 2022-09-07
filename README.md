@@ -47,13 +47,14 @@ The "trinity_cyber_portal" section of the configuration file contains applicatio
 The "outputs" section consists of a list of event output destinations.  Each entry in the
 list is a JSON object with the following fields:
 
-| Field         | Description                                               |
-|---------------|-----------------------------------------------------------|
-| type          | Output type (see below)                                   |
-| enabled       | Specifies if the output is enabled or not                 |
-| field_mapping | An override mapping of field names to new field names\*   |
-| flatten       | Flattens events to remove nested JSON structures          |
-| format        | "json" for JSON output, or "leef" for QRadar LEEF format  |
+| Field         | Description                                                                |
+|---------------|----------------------------------------------------------------------------|
+| type          | Output type (see below)                                                    |
+| enabled       | Specifies if the output is enabled or not                                  |
+| field_mapping | An override mapping of field names to new field names\*                    |
+| flatten       | Flattens events to remove nested JSON structures                           |
+| format        | "json" for JSON output, or "leef" for QRadar LEEF format                   |
+| heartbeat     | If true, writes a heartbeat event on periodic runs if there is no new data |
 
 *Note - the field_mapping option only applies when flattened is true. Re-mapping structured
 data is not currently supported.
