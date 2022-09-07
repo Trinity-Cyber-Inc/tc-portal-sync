@@ -412,17 +412,17 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Instance not specified in systemd startup, so use default
-    if args.config.match("/opt/trinity/tc-portal-sync/config-.json"):
-        args.config = Path("/opt/trinity/tc-portal-sync/config.json")
-
-    # Provide global access to args/config
-    if args.config and not args.config.exists():
+    config_path = args.config
+    if config_path:
+        # Instance not specified in systemd startup, so use default
+        if config_path.match("/opt/trinity/tc-portal-sync/config-.json"):
+            config_path = Path("/opt/trinity/tc-portal-sync/config.json")
+    else:
+        config_path = Path(__file__).resolve().parent / "config.json"
+    if not config_path.exists():
         logger.error("Could not find configuration file: %s", args.config)
         sys.exit(1)
-    elif not args.config:
-        args.config = Path(__file__).resolve().parent / "config.json"
-    with args.config.open() as config_fp:
+    with config_path.open() as config_fp:
         config = json.load(config_fp)
 
     client = TcPortalClient(config["trinity_cyber_portal"])
