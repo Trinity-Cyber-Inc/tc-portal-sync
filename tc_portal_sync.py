@@ -41,6 +41,10 @@ graphql_query = """
           cursor
           node {
             id
+            customer {
+              id
+              name
+            }
             actionTime
             source
             destination
