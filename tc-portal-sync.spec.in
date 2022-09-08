@@ -29,7 +29,7 @@ Trinity Cyber, Inc. Portal Sync
 %{__mkdir} -p %{buildroot}/opt/trinity/tc-portal-sync
 %{__cp} LICENSE tc_portal_sync.py %{buildroot}/opt/trinity/tc-portal-sync/
 %{__cp} config.json.sample %{buildroot}/opt/trinity/tc-portal-sync/config-default.json
-%{__cp} environment.sample %{buildroot}/opt/trinity/tc-portal-sync/environment
+%{__cp} environment.sample %{buildroot}/opt/trinity/tc-portal-sync/environment-default
 %{__mkdir} -p %{buildroot}/usr/lib/systemd/system
 %{__cp} tc-portal-sync@.service %{buildroot}/usr/lib/systemd/system
 
@@ -95,6 +95,6 @@ fi
 %defattr(-, tc-portal-sync, tc-portal-sync, -)
 /opt/trinity/tc-portal-sync/
 %config(noreplace) /opt/trinity/tc-portal-sync/config-default.json
-%config(noreplace) /opt/trinity/tc-portal-sync/environment
+%config(noreplace) /opt/trinity/tc-portal-sync/environment-default
 %attr(644, tc-portal-sync, tc-portal-sync) /usr/lib/systemd/system/tc-portal-sync@.service
 

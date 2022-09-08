@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 User=trinitycyber
 Group=trinitycyber
-EnvironmentFile=/opt/trinity/tc-portal-sync/environment
+EnvironmentFile=/opt/trinity/tc-portal-sync/environment-%i
 ExecStart=/opt/trinity/tc-portal-sync/runtime/bin/python /opt/trinity/tc-portal-sync/tc_portal_sync.py --config /opt/trinity/tc-portal-sync/config-%i.json
 ExecStop=/bin/kill -TERM $MAINPID
 Restart=on-failure

@@ -270,7 +270,7 @@ class S3BucketOutput(BaseEventOutput):
 
     def __init__(self, output_config):
         super().__init__(output_config)
-        self.client = boto3.client("s3", region_name=output_config["s3_region"], verify=False)
+        self.client = boto3.client("s3", region_name=output_config["s3_region"])
         self.bucket = output_config["s3_bucket"]
         self.retry_interval = output_config["retry_delay_ms"] / 1000
 

@@ -27,7 +27,13 @@ To start the service, as root:
 
 It is possible to run multiple instance of the service, each with its own configuration. To do so:
   * Create a "/opt/trinity/tc-portal-sync/config-<instance_name>.json" file
+  * Create a "/opt/trinity/tc-portal-sync/enviroment-<instance_name>" file
   * Run "systemctl start tc-portal-sync@<instance_name>"
+
+When running as a service, the `environment-<instance_name>` file can store AWS credentials, proxy settings,
+and CA chain paths for SSL verification with custom CA chains (e.g. for SSL decyption at a firewall). It will
+be loaded when the process starts. Note placing credentials in the environment is not always considered best practice
+and the use of the ~/.aws/ directory for S3 settings may be perferred.
 
 ### Configuration
 The configuration file for this application is "config-default.json" and it exists in the top-level project directory,
@@ -77,8 +83,11 @@ These additional fields apply:
 
 #### Output Type: s3
 The "s3" output type write a file per-event to an S3 bucket. This will use the credentials
-found in the ~/.aws/credentials file. You can use the AWS command-line tool to initialize
-this file. Output is written to S3 as:
+searched using the standard boto3 process including checking  in the ~/.aws/credentials file
+and the AWS environment variables. When running as a service, an `environment-<instance>` file
+can be created along with each `config-<instance>.json` file to store credentials, proxy settings,
+and CA chain paths for SSL verification with custom CA chains (e.g. for SSL decyption at a firewall).
+Output is written to S3 as:
 s3://{s3_region}/{s3_bucket}/{key_base}/{year}/{month}/{day}/{key_file_prefix-}{unqiue_event_id-event_index}.{format}
 The values for {year, month, day} are taken from the event timestamp, not the current time.
 
