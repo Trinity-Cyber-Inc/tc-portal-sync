@@ -41,7 +41,8 @@
       "field_mapping": {},
       "heartbeat": true,
       "directory": "/tmp/events",
-      "key_base": ""
+      "key_base": "",
+      "key_file_prefix": "TrinityCyber"
     },
     {
       "enabled": false,
@@ -53,6 +54,7 @@
       "s3_bucket": "event-test.trinitycyber.com",
       "s3_region": "us-east-1",
       "key_base": "",
+      "key_file_prefix": "TrinityCyber",
       "retry_delay_ms": 500
     }
   ]

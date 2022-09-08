@@ -106,6 +106,10 @@ class BaseEventOutput:
             if not self.key_base[-1] == "/":
                 self.key_Base = self.key_base + "/"
 
+        self.key_file_prefix = output_config.get('key_file_prefix') or ""
+        if self.key_file_prefix and self.key_file_prefix[-1] != "-":
+            self.key_file_prefix = self.key_file_prefix + "-"
+
         self.format = output_config.get("format", "json")
         if self.format == "json":
             self.formatter = self.format_json
@@ -216,7 +220,7 @@ class BaseEventOutput:
         """Returns a unique key / filename for the event (for subclasses that need it)"""
         event_time = dateutil.parser.parse(event["actionTime"])
         event_id_hash = event["id"].split("/")[-1]
-        return f'{self.key_base}{event_time.strftime("%Y/%m/%d")}/{event_id_hash}_{index}.{self.format}'
+        return f'{self.key_base}{event_time.strftime("%Y/%m/%d")}/{self.key_file_prefix}{event_id_hash}_{index}.{self.format}'
 
     def output_no_results(self):
         if not self.heartbeat_enabled:
@@ -233,7 +237,7 @@ class BaseEventOutput:
             result=f"Trinity Cyber Portal check-in at {fmt_time} and did not detect any new events, "
             f"waiting until next scheduled check-in.",
         )
-        key = f'{self.key_base}{now_time.strftime("%Y/%m/%d/no_data_%H%M%S.json")}'
+        key = f'{self.key_base}{now_time.strftime("%Y/%m/%d/")}{self.key_file_prefix}{now_time.strftime("no_data_%H%M%S.json")}'
         content = json.dumps(no_results).encode("UTF-8")
         self.write_content(key, content)
 

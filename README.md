@@ -13,19 +13,19 @@ events to be processed or submitted to another system.
 
 ### Requirements
 This is a Python 3 script; it was developed on CentOS 7 with Python 3.6 but should be broadly applicable to most Python
-3  variants on most UNIX based operating systems.  Library dependencies are listed in requirements.txt and can be
+3  variants on most UNIX based operating systems. Library dependencies are listed in requirements.txt and can be
 installed using "pip install -r requirements.txt"
 
 ### Running as a Service
 If installing as a service using the RPM, the script and config files will be placed in the 
-/opt/trinity/tc-portal-sync/ directory.  Make sure any configuration files needed by the service
+/opt/trinity/tc-portal-sync/ directory. Make sure any configuration files needed by the service
 are accessible to the "tc-portal-sync" user.
 
 To start the service, as root:
   * Edit the "/opt/trinity/tc-portal-sync/config-default.json" configuration file (see below for detail )
   * Run "systemctl start tc-portal-sync"
 
-It is possible to run multiple instance of the service, each with its own configuration.  To do so:
+It is possible to run multiple instance of the service, each with its own configuration. To do so:
   * Create a "/opt/trinity/tc-portal-sync/config-<instance_name>.json" file
   * Run "systemctl start tc-portal-sync@<instance_name>"
 
@@ -37,14 +37,14 @@ The "trinity_cyber_portal" section of the configuration file contains applicatio
 
 | Field                 | Description                                                                                                                        |
 |-----------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| api_url               | The URL for the Trinity Cyber Portal GraphQL endpoint.  Keep the default unless accessing a custom portal instance.                |
-| api_key               | API key.  This can be generated from your user profile menu (top right) on https://portal.trinitycyber.com                         |
+| api_url               | The URL for the Trinity Cyber Portal GraphQL endpoint. Keep the default unless accessing a custom portal instance.                 |
+| api_key               | API key. This can be generated from your user profile menu (top right) on https://portal.trinitycyber.com                          |
 | marker_file           | The file used to keep track of current synchronization state.                                                                      |
-| customer_gids         | (For MSP users) Specifies which customers' events to download.  The values can be found by running "tc_portal_sync.py --customers" |
+| customer_gids         | (For MSP users) Specifies which customers' events to download. The values can be found by running "tc_portal_sync.py --customers"  |
 | poll_interval_seconds | How long to wait (in seconds) between API calls when no additional events are available.                                           |
-| query_name            | Update with a descriptive query name that can be used for support purposes.  Example: MyCompanyMyApplication                       |
+| query_name            | Update with a descriptive query name that can be used for support purposes. Example: MyCompanyMyApplication                        |
 
-The "outputs" section consists of a list of event output destinations.  Each entry in the
+The "outputs" section consists of a list of event output destinations. Each entry in the
 list is a JSON object with the following fields:
 
 | Field         | Description                                                                |
@@ -64,27 +64,33 @@ This "stdout" output type writes events to standard output and is helpful if run
 directly. There are no additional parameters that apply to this output type.
 
 #### Output Type: directory
-The "directory" output type writes a file per-event to a local directory.  These additional
-fields apply:
+The "directory" output type writes a file per-event to a local directory. Output is written to:
+/{directory}/{key_base}/{year}/{month}/{day}/{key_file_prefix-}{unqiue_event_id-event_index}.{format}
+The values for {year, month, day} are taken from the event timestamp, not the current time.
+These additional fields apply:
 
-| Field     | Description                                                              |
-|-----------|--------------------------------------------------------------------------|
-| directory | The directory where event files will be written.                         |
-| key_base  | Specifies a prefix to be added to files                                  |
+| Field           | Description                                                              |
+|-----------------|--------------------------------------------------------------------------|
+| directory       | The directory where event files will be written.                         |
+| key_base        | Specifies a prefix to be added before the date path                      |
+| key_file_prefix | Specifies a prefix to be added before event ID based file name           |
 
 #### Output Type: s3
-The "s3" output type write a file per-event to an S3 bucket.  This will use the credentials
-found in the ~/.aws/credentials file.  You can use the AWS command-line tool to initialize
-this file.
+The "s3" output type write a file per-event to an S3 bucket. This will use the credentials
+found in the ~/.aws/credentials file. You can use the AWS command-line tool to initialize
+this file. Output is written to S3 as:
+s3://{s3_region}/{s3_bucket}/{key_base}/{year}/{month}/{day}/{key_file_prefix-}{unqiue_event_id-event_index}.{format}
+The values for {year, month, day} are taken from the event timestamp, not the current time.
 
 These additional fields apply:
 
 | Field          | Description                                                               |
-|----------------|---------------------------------------------------------------------------|
-| s3_bucket      | The name of the S3 bucket to write to.                                    |
-| s3_region      | The region of the S3 bucket to write to                                   |
-| key_base       | Specifies a prefix to be added to files                                   |
-| retry_delay_ms | How quickly to retry uploading to S3                                      |
+|-----------------|---------------------------------------------------------------------------|
+| s3_bucket       | The name of the S3 bucket to write to.                                    |
+| s3_region       | The region of the S3 bucket to write to                                   |
+| key_base        | Specifies a prefix to be added to files                                   |
+| key_file_prefix | Specifies a prefix to be added before event ID based file name            |
+| retry_delay_ms  | How quickly to retry uploading to S3                                      |
 
 
 ### Script Parameters
