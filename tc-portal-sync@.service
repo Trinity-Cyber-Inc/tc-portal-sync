@@ -1,0 +1,15 @@
+[Unit]
+Description=Trinity Cyber Portal Sync
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+User=trinitycyber
+Group=trinitycyber
+EnvironmentFile=/opt/trinity/tc-portal-sync/environment-%i
+ExecStart=/opt/trinity/tc-portal-sync/runtime/bin/python /opt/trinity/tc-portal-sync/tc_portal_sync.py --config /opt/trinity/tc-portal-sync/config-%i.json
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

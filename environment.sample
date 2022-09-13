@@ -1,0 +1,8 @@
+# This is the default for RHEL/CentOS/Fedora and related OSes
+REQUESTS_CA_BUNDLE=/etc/pki/tls/cert.pem
+# This can be set here or in ~/.aws/credentials and related files
+#AWS_ACCESS_KEY_ID=
+#AWS_SECRET_ACCESS_KEY=
+# Uncomment and set these if you need a proxy configured
+#HTTP_PROXY = 'https://company-web-proxy.example.com:8443'
+#HTTPS_PROXY = 'https://company-web-proxy.example.com:8443'

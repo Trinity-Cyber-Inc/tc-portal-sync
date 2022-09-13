@@ -1,0 +1,61 @@
+{
+  "trinity_cyber_portal": {
+    "api_url": "https://portal.trinitycyber.com/graphql",
+    "api_key": "<add me>",
+    "marker_file": "~/.tc3/portal-s3-after-marker.txt",
+    "customer_gids": [],
+    "poll_interval_seconds": 300,
+    "query_name": "TcExampleLatestEvents"
+  },
+  "outputs": [
+    {
+      "enabled": true,
+      "type": "stdout",
+      "format": "json",
+      "flatten": true,
+      "heartbeat": false,
+      "field_mapping": {
+        "actionTime": "timestamp",
+        "source": "src",
+        "destination": "dest",
+        "sourcePort": "src_port",
+        "destinationPort": "dest_port",
+        "tags": "tag",
+        "host": "url_domain",
+        "method": "http_method",
+        "path": "uri_query",
+        "userAgent": "http_user_agent",
+        "contentType": "http_content_type",
+        "server": "server",
+        "statusCode": "status",
+        "statusString": "statusString",
+        "DnsData.host": "host",
+        "TlsData.sniHost": "sniHost"
+      }
+    } ,
+    {
+      "enabled": false,
+      "type": "directory",
+      "format": "json",
+      "flatten": false,
+      "field_mapping": {},
+      "heartbeat": true,
+      "directory": "/tmp/events",
+      "key_base": "",
+      "key_file_prefix": "TrinityCyber"
+    },
+    {
+      "enabled": false,
+      "type": "s3",
+      "format": "json",
+      "flatten": false,
+      "field_mapping": {},
+      "heartbeat": true,
+      "s3_bucket": "event-test.trinitycyber.com",
+      "s3_region": "us-east-1",
+      "key_base": "",
+      "key_file_prefix": "TrinityCyber",
+      "retry_delay_ms": 500
+    }
+  ]
+}
