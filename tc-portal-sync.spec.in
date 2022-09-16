@@ -50,9 +50,8 @@ perl -p -i -e 's/\/.*?\/runtime/runtime/' runtime/bin/*
 
 if  [ $1 -eq 1 ]; then
     # is initial install
-    /usr/bin/systemctl enable tc-portal-sync@default.service
-    echo "Service for tc-portal-sync default instance has been enabled but not started."
-    echo "Ensure the default config file is present and correct. Then start the service."
+    echo "Service for tc-portal-sync default instance is available but has not been enabled to started."
+    echo "Ensure the default config file is present and correct. Then start the service and enable it for automated start on reboot."
     echo "See the README.md for details on running multiple instances each with a different config."
 fi
 

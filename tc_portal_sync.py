@@ -443,12 +443,13 @@ if __name__ == "__main__":
                 output.output_event(event)
 
         args.since = None
-        if args.last or args.once:
-            break
 
         if events_received == 0:
             for output in outputs:
                 output.output_no_results()
+        
+        if args.last or args.once:
+            break
 
         delay = config["trinity_cyber_portal"]["poll_interval_seconds"]
         logger.info(
