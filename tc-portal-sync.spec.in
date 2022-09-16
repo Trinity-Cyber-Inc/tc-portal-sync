@@ -6,7 +6,7 @@ License: Apache 2.0
 Group: Security/TrinityCyber
 Prefix: /opt
 BuildRequires: perl, python36
-Requires: python36
+#Requires:
 Requires(pre): shadow-utils
 Requires(post): systemd
 Requires(preun): systemd
