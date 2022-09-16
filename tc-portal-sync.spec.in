@@ -97,3 +97,4 @@ fi
 %config(noreplace) /opt/trinity/tc-portal-sync/config-default.json
 %config(noreplace) /opt/trinity/tc-portal-sync/environment-default
 %attr(644, tc-portal-sync, tc-portal-sync) /usr/lib/systemd/system/tc-portal-sync@.service
+%attr(755, tc-portal-sync, tc-portal-sync) /opt/trinity/tc-portal-sync/run-portal-sync.sh
