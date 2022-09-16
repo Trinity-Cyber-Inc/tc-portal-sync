@@ -121,3 +121,13 @@ to feed into a SIEM" use case. By default, the script sleeps for 300 seconds and
 
 If you change query parameters between runs, update the fields being requested, or make other
 modifications you will need to erase the `~/.tc3/tc-portal-end-cursor` file and start from scratch.
+
+## Bash Script
+There's a wrapper bash script that installs as part of the RPM which wraps the Python runtime environment,
+an instance environment file, and a config file. The syntax is:
+`/opt/trinity/tc-portal-sync/run-portal-sync.sh <instance name> --args --to --the --python --script go here`
+The first argument is the instance name: default, demo, etc. as a bare parameter. The remaining arguments
+are forwarded to the python script directly. The instance name is converted to a config file and passed
+as `--config /opt/trinity/tc-portal-sync/config-${instance}.json` to the python. An example invocation is:
+`./run-portal-sync.sh default --last 10`
+which would run the script with the default configuration pulling the last 10 events.
