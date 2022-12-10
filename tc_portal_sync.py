@@ -45,6 +45,10 @@ graphql_query = """
               id
               name
             }
+            connector {
+              id
+              name
+            }
             actionTime
             source
             destination
