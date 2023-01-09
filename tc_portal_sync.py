@@ -308,6 +308,10 @@ class TcPortalClient:
         }
         self.api_url = portal_config["api_url"]
         self.customers = portal_config.get("customer_gids") or None
+        if self.customers:
+            logger.warning(
+                'The "customer_gids" configuration parameter has been deprecated.  Use  "query_filter" instead.')
+        self.query_filter = portal_config.get('query_filter', {})
         self.query_name = portal_config["query_name"]
         self.marker_file = Path(portal_config["marker_file"]).expanduser()
         if not self.marker_file.parent.exists():
@@ -335,7 +339,7 @@ class TcPortalClient:
             logger.debug("Has more pages: %s", have_more_pages)
             if self.marker_file.exists():
                 after_marker = self.marker_file.read_text()
-            variables = dict(filter=dict())
+            variables = dict(filter=self.query_filter)
             if self.customers:
                 variables["filter"]["customers"] = self.customers
             if since:

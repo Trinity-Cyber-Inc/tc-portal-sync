@@ -3,9 +3,9 @@
     "api_url": "https://portal.trinitycyber.com/graphql",
     "api_key": "<add me>",
     "marker_file": "~/.tc3/portal-s3-after-marker.txt",
-    "customer_gids": [],
     "poll_interval_seconds": 300,
-    "query_name": "TcExampleLatestEvents"
+    "query_name": "TcExampleLatestEvents",
+    "query_filter": {},
   },
   "outputs": [
     {
