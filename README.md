@@ -41,15 +41,14 @@ or in /opt/trinity/tc-portal-sync if installing via the RPM.
 
 The "trinity_cyber_portal" section of the configuration file contains application-level settings:
 
-| Field                 | Description                                                                                                                        |
-|-----------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| api_url               | The URL for the Trinity Cyber Portal GraphQL endpoint. Keep the default unless accessing a custom portal instance.                 |
-| api_key               | API key. This can be generated from your user profile menu (top right) on https://portal.trinitycyber.com                          |
-| marker_file           | The file used to keep track of current synchronization state.                                                                      |
-| customer_gids         | (For MSP users) Specifies which customers' events to download. The values can be found by running "tc_portal_sync.py --customers"  |
-| poll_interval_seconds | How long to wait (in seconds) between API calls when no additional events are available.                                           |
-| query_name            | Update with a descriptive query name that can be used for support purposes. Example: MyCompanyMyApplication                        |
-
+| Field                 | Description                                                                                                      |
+|-----------------------|------------------------------------------------------------------------------------------------------------------|
+| api_url               | The URL for the Trinity Cyber Portal GraphQL endpoint. Keep the default unless accessing a custom portal instance. |
+| api_key               | API key. This can be generated from your user profile menu (top right) on https://portal.trinitycyber.com        |
+| marker_file           | The file used to keep track of current synchronization state.                                                    |
+| poll_interval_seconds | How long to wait (in seconds) between API calls when no additional events are available.                         |
+| query_name            | Update with a descriptive query name that can be used for support purposes. Example: MyCompanyMyApplication        |
+| query_filter          | Filter to apply to events (see "Event Filtering" section below)                                                  | 
 The "outputs" section consists of a list of event output destinations. Each entry in the
 list is a JSON object with the following fields:
 
@@ -121,6 +120,53 @@ to feed into a SIEM" use case. By default, the script sleeps for 300 seconds and
 
 If you change query parameters between runs, update the fields being requested, or make other
 modifications you will need to erase the `~/.tc3/tc-portal-end-cursor` file and start from scratch.
+
+## Event Filtering
+The events API allows filtering on many event, formula, and customer/connector related fields, and it supports
+boolean expressions containing multiple fields values.  To see the full list of fields supported by the API, visit the
+"GraphQL API" page on the Customer Portal and search the docs for "EventFilter".
+
+Here are some examples of filters supported by the API:
+
+```json
+// Only include events matching a certain customer name
+{
+  "customer": {
+    "name": "Acme Widgets"
+  }
+}
+```
+
+```json
+// Exclude events on particular connector
+{
+  "not": {
+    "connector": {
+      "name": "Guest Wireless"
+    }
+  }
+}
+```
+
+```json
+// Exclude events that match the EICAR formula (used for testing), or hits triggered from VirusTotal
+
+{
+  "not": {
+    "or": [
+      {
+        "formula": {
+          "title": "EICAR"
+        }
+      },
+      {
+        "httpHost": "www.virustotal.com"
+      }
+    ]
+  }
+}
+```
+
 
 ## Bash Script
 There's a wrapper bash script that installs as part of the RPM which wraps the Python runtime environment,
