@@ -49,6 +49,13 @@ graphql_query = """
               id
               name
             }
+            device {
+              id
+              clientDeviceId
+              deviceName
+              deviceType
+            }            
+            portalUrl
             actionTime
             source
             destination
@@ -60,7 +67,7 @@ graphql_query = """
             formulaMatches {
                 action {
                     response
-                } 
+                }
                 formula {
                   formulaId
                   title
@@ -72,7 +79,12 @@ graphql_query = """
                 }
             }
             applicationProtocol
+            firstPayloadsSha256
+            firstPayloadsFilename
+            forwardProxyClientIdentifier
+            forwardProxyClientIp
             applicationData {
+              protocol: __typename
               ... on HttpRequestData {
                 method
                 path
@@ -90,6 +102,19 @@ graphql_query = """
               }
               ... on TlsData {
                 sniHost
+              }
+              ... on SmtpData {
+                smtpServerBannerMessage
+                smtpServerBannerStatusCode
+                smtpMailFrom
+                smtpRcptTo
+                emailFrom
+                emailTo
+                emailSubject
+                emailMessageId
+                emailReplyTo
+                emailDate
+                emailXmailer
               }
             }
           }
