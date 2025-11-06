@@ -279,7 +279,7 @@ class BaseEventOutput:
         self.write_content(key, content)
 
     def write_content(self, _key, content):
-        print(content)
+        print(content.decode('utf-8'))
 
 
 class DirectoryOutput(BaseEventOutput):
