@@ -5,9 +5,9 @@ import json
 import logging.config
 import socket
 import sys
+import textwrap
 import time
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 import boto3
@@ -30,9 +30,15 @@ logging.basicConfig(
 )
 
 
-graphql_query = """
-    query QUERY_NAME ($first: Int, $last: Int, $after: String, $filter: EventFilter) {
-      events(first: $first, last: $last, after: $after, filter: $filter) {
+graphql_query = textwrap.dedent("""
+    query QUERY_NAME($first: Int, $last: Int, $after: String, $filter: EventFilter) {
+      events(
+        first: $first
+        last: $last
+        after: $after
+        filter: $filter
+        sortBy: {field: INGEST_TIME, direction: ASC}
+      ) {
         pageInfo {
           hasNextPage
           endCursor
@@ -54,7 +60,7 @@ graphql_query = """
               clientDeviceId
               deviceName
               deviceType
-            }            
+            }
             portalUrl
             actionTime
             source
@@ -65,18 +71,18 @@ graphql_query = """
             direction
             trustInitiated
             formulaMatches {
-                action {
-                    response
+              action {
+                response
+              }
+              formula {
+                formulaId
+                title
+                background
+                tags {
+                  category
+                  value
                 }
-                formula {
-                  formulaId
-                  title
-                  background
-                  tags {
-                    category
-                    value
-                  }
-                }
+              }
             }
             applicationProtocol
             firstPayloadsSha256
@@ -121,7 +127,7 @@ graphql_query = """
         }
       }
     }
-    """
+    """.strip())
 
 
 class BaseEventOutput:
@@ -132,14 +138,14 @@ class BaseEventOutput:
         self.mapping = output_config.get("field_mapping", {})
         self.heartbeat_enabled = output_config.get("heartbeat", False)
 
-        self.key_base = output_config.get('key_base') or ""
+        self.key_base = output_config.get("key_base") or ""
         if self.key_base:
             if self.key_base[0] == "/":
                 self.key_base = self.key_base[1:]
             if not self.key_base[-1] == "/":
                 self.key_Base = self.key_base + "/"
 
-        self.key_file_prefix = output_config.get('key_file_prefix') or ""
+        self.key_file_prefix = output_config.get("key_file_prefix") or ""
         if self.key_file_prefix and self.key_file_prefix[-1] != "-":
             self.key_file_prefix = self.key_file_prefix + "-"
 
@@ -201,9 +207,7 @@ class BaseEventOutput:
         fields = dict()
 
         fields["devTime"] = event.pop("actionTime")
-        fields[
-            "devTimeFormat"
-        ] = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"  # (e.g. 2022-04-25T00:01:19.109+00:00)
+        fields["devTimeFormat"] = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"  # (e.g. 2022-04-25T00:01:19.109+00:00)
 
         # LEEF-standard fields
         if "source" in event:
@@ -233,10 +237,8 @@ class BaseEventOutput:
                 value = value.replace("\xa6", "\\\xa6")
             fields[key] = value
 
-        fields_formatted = "\xa6".join(
-            [f"{key}={value}" for key, value in fields.items()]
-        )
-        return f"{syslog_header} {leef_header}{fields_formatted}".encode('utf-8')
+        fields_formatted = "\xa6".join([f"{key}={value}" for key, value in fields.items()])
+        return f"{syslog_header} {leef_header}{fields_formatted}".encode("utf-8")
 
     def output_event(self, event):
         if self.flatten:
@@ -258,7 +260,7 @@ class BaseEventOutput:
     def output_no_results(self):
         if not self.heartbeat_enabled:
             return
-        if self.format != 'json':
+        if self.format != "json":
             # TODO: Output for LEEF
             return
 
@@ -267,8 +269,10 @@ class BaseEventOutput:
         no_results = dict(
             time=fmt_time,
             status="no results",
-            result=f"Trinity Cyber Portal check-in at {fmt_time} and did not detect any new events, "
-            f"waiting until next scheduled check-in.",
+            result=(
+                f"Trinity Cyber Portal check-in at {fmt_time} and did not detect any new events, "
+                "waiting until next scheduled check-in."
+            ),
         )
         key = f'{self.key_base}{now_time.strftime("%Y/%m/%d/")}{self.key_file_prefix}{now_time.strftime("no_data_%H%M%S.json")}'
         content = json.dumps(no_results).encode("UTF-8")
@@ -310,13 +314,12 @@ class S3BucketOutput(BaseEventOutput):
                 upload_start = time.perf_counter()
                 self.client.put_object(Bucket=self.bucket, Key=key, Body=content)
                 upload_duration = time.perf_counter() - upload_start
-                logger.info(
-                    f"Uploaded {key} in {upload_duration} seconds to s3://{self.bucket}"
-                )
+                logger.info(f"Uploaded {key} in {upload_duration} seconds to s3://{self.bucket}")
                 uploaded = True
             except botocore.exceptions.ClientError as e:
                 logger.error(
-                    f"Failed to upload {key}. Waiting {self.retry_interval} ms and trying again. The exception was:\n{e}"
+                    f"Failed to upload {key}. Waiting {self.retry_interval} ms and trying again. The exception"
+                    f" was:\n{e}"
                 )
                 time.sleep(self.retry_interval / 1000)
 
@@ -335,8 +338,9 @@ class TcPortalClient:
         self.customers = portal_config.get("customer_gids") or None
         if self.customers:
             logger.warning(
-                'The "customer_gids" configuration parameter has been deprecated.  Use  "query_filter" instead.')
-        self.query_filter = portal_config.get('query_filter', {})
+                'The "customer_gids" configuration parameter has been deprecated.  Use  "query_filter" instead.'
+            )
+        self.query_filter = portal_config.get("query_filter", {})
         self.query_name = portal_config["query_name"]
         self.marker_file = Path(portal_config["marker_file"]).expanduser()
         if not self.marker_file.parent.exists():
@@ -397,13 +401,10 @@ class TcPortalClient:
                   }
                 }
               }
-            }        
+            }
         """
         rv = self.graphql(query)
-        return {
-            edge["node"]["id"]: edge["node"]["name"]
-            for edge in rv["data"]["customers"]["edges"]
-        }
+        return {edge["node"]["id"]: edge["node"]["name"] for edge in rv["data"]["customers"]["edges"]}
 
 
 if __name__ == "__main__":
@@ -480,7 +481,7 @@ if __name__ == "__main__":
         if events_received == 0:
             for output in outputs:
                 output.output_no_results()
-        
+
         if args.last or args.once:
             break
 
